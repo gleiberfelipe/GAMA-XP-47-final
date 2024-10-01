@@ -6,7 +6,7 @@ import { CardDois } from "../../components/cardDois";
 import earphone from "../../assets/images/earphone.png"
 import smartwatch from "../../assets/images/smartwatch.png"
 import laptop from "../../assets/images/laptop.png"
-import console from "../../assets/images/console.png"
+import consoleGame from "../../assets/images/console.png"
 import oculus from "../../assets/images/oculus.png"
 import speaker from "../../assets/images/speaker.png"
 import { Card } from "../../components/card";
@@ -26,14 +26,19 @@ export function Home() {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const response = await fetch("http://localhost:3000/produtos");
-                const data = await response.json();
+                const response = await fetch("https://admin-beige-zeta.vercel.app/api/products", {
+                    method: 'GET'
+                  });
+                const data = await response.json();                
                 setResponseArray(data);
+                
+                console.log(responseArray); 
                 setIsLoading(false);
             } catch (error) {
                 setIsLoading(false);
                 setErrorMessage(`Error: falha ao carregar os dados`);
-                console.error(new Error(`Error: ${error.message}`));
+                /* console.error(new Error(`Error: ${error.message}`)); */
+                console.log(error);
             }
         };
 
@@ -43,10 +48,10 @@ export function Home() {
     if (isLoading) {
         return <div className="loading"><h2>Loading...</h2></div>;
     }
-
-    if (console && console.error) {
-        console.error(new Error(`Error: ${error.message}`));
+    if (errorMessage) {
+        console.error(new Error(`Error: ${errorMessage}`));
     }
+    
 
     const colors = ["rgb(37, 190, 68)", "red", "orange", "#f5de0c", "pink", "blue"];
 
@@ -67,7 +72,7 @@ export function Home() {
                     <CardUm backgroundColor="orange" h3="Play" img={oculus} h2="Game" h1="Oculus" />
                     <CardUm backgroundColor="#f5de0c" h3="Enjoy" img={earphone} h2="with" h1="Earphone" />
                     <CardUm backgroundColor="pink" h3="Now" img={speaker} h2="Amazing" h1="Speaker" />
-                    <CardDois backgroundColor="blue" h3="Best" img={console} h2="Gaming" h1="Console" />
+                    <CardDois backgroundColor="blue" h3="Best" img={consoleGame} h2="Gaming" h1="Console" />
 
                 </ContentCards>
                 <Vitrine>
@@ -83,15 +88,15 @@ export function Home() {
                         <section>
                             {responseArray.slice(0, 8).map((item: ResponseObject) => (
                                 <Card
-                                    key={item.id}
+                                    key={item._id}
                                     style={{
                                         backgroundColor: colors[Math.floor(Math.random() * colors.length)],
                                     }}
                                     id={item.id}
-                                    nome={item.nome}
-                                    preco={`R$ ${item.preco}.00 `}
+                                    nome={item.title}
+                                    preco={`R$ ${item.price}.00 `}
                                     goToUrl={`/products/${item.id}`}
-                                    img={item.foto}
+                                    img={item.media}
                                 />
                             ))}
                         </section>

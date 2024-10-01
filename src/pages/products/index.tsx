@@ -26,9 +26,12 @@ const Products = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await api.get("http://localhost:3000/produtos");
+        const result = await api.get("https://admin-beige-zeta.vercel.app/api/products", {
+          method: 'GET'
+        });
         setProdutos(result.data);
         setLoading(false);
+        console.log(produtos);
       } catch (error) {
         console.error(error);
         setProdutos([]);
@@ -49,6 +52,7 @@ const Products = () => {
     }
     setSelectedCategories(newSelectedCategories);
     setOffset(0); // Reset the offset when the category changes
+    console.log(selectedCategories)
   };
 
   const showAllProducts = () => {
@@ -57,8 +61,9 @@ const Products = () => {
   }
 
   const filteredProdutos = selectedCategories.length > 0
-    ? produtos.filter((produto) => selectedCategories.includes(produto.categoria))
-    : produtos;
+  ? produtos.filter((produto) => selectedCategories.includes(produto.category)) // Mude "categoria" para "category"
+  : produtos;
+
 
   const limit = 6;
   const total = filteredProdutos.length;
@@ -81,26 +86,26 @@ const Products = () => {
           <label>
             <input
               type="checkbox"
-              checked={selectedCategories.includes("PC")}
-              onChange={() => handleCategoryFilter("PC")}
+              checked={selectedCategories.includes("moeda")}
+              onChange={() => handleCategoryFilter("moeda")}
             />
-            PC
+            Digimons
           </label>
           <label>
             <input
               type="checkbox"
-              checked={selectedCategories.includes("Gadget")}
-              onChange={() => handleCategoryFilter("Gadget")}
+              checked={selectedCategories.includes("arroz")}
+              onChange={() => handleCategoryFilter("arroz")}
             />
-            Gadgets
+            arroz
           </label>
           <label>
             <input
               type="checkbox"
-              checked={selectedCategories.includes("Consoles")}
-              onChange={() => handleCategoryFilter("Consoles")}
+              checked={selectedCategories.includes("feio")}
+              onChange={() => handleCategoryFilter("feio")}
             />
-            Consoles
+            feio
           </label>
         </aside>
   
@@ -121,9 +126,9 @@ const Products = () => {
                 >
                   <h2>{produto.nome}</h2>
                   <Link to={`/products/${produto.id}`}>
-                    <img src={produto.foto} alt={produto.nome} />
+                    <img src={produto.media[0]} alt={produto.title} />
                   </Link>
-                  <p>{`RS ${produto.preco},00`}</p>
+                  <p>{`RS ${produto.price},00`}</p>
                   <Link to={`/products/${produto.id}`}>
                     <button>Saiba Mais</button>
                   </Link>

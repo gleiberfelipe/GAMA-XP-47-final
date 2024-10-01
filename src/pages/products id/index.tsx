@@ -25,12 +25,20 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Produto | null>(null);
   const [fetchError, setFetchError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
+  const [imageArray, setImageArray] = useState(0);
   const dispatch = useDispatch();
+
+  const handleColorChange = (event) => {
+    setSelectedColorIndex(event.target.value);
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const result = await api.get(`http://localhost:3000/produtos/${productId}`);
+        const result = await api.get(`https://admin-beige-zeta.vercel.app/api/products/${productId}`, {
+          method: 'GET'
+        });
         setProduct(result.data);
         setIsLoading(false);
       } catch (error) {
@@ -43,10 +51,19 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (product) {
-      dispatch(addToCart(product));
+      const productWithSelectedColor = { 
+        ...product, 
+        selectedColorIndex 
+      };
+      dispatch(addToCart(productWithSelectedColor));
       toast.success('Produto adicionado ao carrinho!');
     }
   };
+  
+  const handleImageArray = (number:any) =>{
+
+    setImageArray(number)
+  }
   
 
   if (isLoading) {
@@ -69,30 +86,54 @@ const ProductDetail = () => {
     );
   }
 
+
+
   return (
     <>
       <Header />
       <ToastContainer />
       <DivMaster>
-        <FotoProductDiv >
-          <div className="thumbnails">
-            <img src={product.foto} alt={product.nome} />
-            <img src={product.foto} alt={product.nome} />
-            <img src={product.foto} alt={product.nome} />
-          </div>
-          <img className="main-photo" src={product.foto} alt={product.nome} />
-        </FotoProductDiv>
+      <FotoProductDiv>
+  <div className="thumbnails">
+    <img 
+      src={Array.isArray(product.media) && product.media.length >= 1 ? product.media[0] : null} 
+      alt={product.nome} 
+      onClick={() =>  handleImageArray(0)} 
+    />
+    <img 
+      src={Array.isArray(product.media) && product.media.length >= 2 ? product.media[1] : null} 
+      alt={product.nome} 
+      onClick={() => Array.isArray(product.media) && product.media.length >= 2 ? handleImageArray(1): null} 
+    />
+    <img 
+      src={Array.isArray(product.media) && product.media.length >= 3 ? product.media[2] : null} 
+      alt={product.nome} 
+      onClick={() => Array.isArray(product.media) && product.media.length >= 3 ? handleImageArray(2) : null} 
+    />
+  </div>
+  <img 
+    className="main-photo" 
+    src={Array.isArray(product.media) && product.media.length > 0 ? product.media[imageArray] : null} 
+    alt={product.title} 
+  />
+</FotoProductDiv>
+
         <div className="infoDiv">
-          <h2>{product.nome}</h2>
+          <h2>{product.title}</h2>
           <p>
-            Detalhes do produto: Lorem ipsum dolor sit amet consectetur
-            adipisicing elit. Illum ratione esse aliquid perferendis ea
-            accusantium sapiente magnam. Voluptate quo et maiores. Molestiae
-            facere exercitationem recusandae vel blanditiis voluptatum suscipit{" "}
-            {product.descricao}
+            Detalhes do produto: 
+            {product.description}
           </p>
-          <div className="priceDiv">
-            <h3>R$ {product.preco},00</h3>
+          {product.colors && product.colors.length > 0 && (
+        <select value={selectedColorIndex} onChange={handleColorChange}>
+          {/* Mapeia as cores disponíveis e cria uma opção para cada uma */}
+          {product.colors.map((color, index) => (
+            <option key={index} value={index}>{color}</option>
+          ))}
+        </select>
+      )}
+          <div className="priceDiv">  
+            <h3>R$ {product.price},00</h3>
             {/* add any other product details you want to display */}
             <button onClick={handleAddToCart}>POR NO CARINHO</button>
           </div>

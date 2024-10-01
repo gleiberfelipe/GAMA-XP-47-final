@@ -6,8 +6,11 @@ flex-direction: column;
 align-items: center;
 margin: 2rem auto;
 max-width: 80%;
-
-h1 {
+.userInfo{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  h1 {
 font-size: 3rem;
 font-weight: bold;
 color: #222;
@@ -18,7 +21,17 @@ p {
 font-size: 1.5rem;
 color: #777;
 margin-bottom: 1rem;
+font-size: 40px;
 }
+
+.imgUser{
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+}
+}
+
+
 
 form {
 display: flex;

@@ -6,6 +6,9 @@ import { HeaderBox } from "./style";
 import { useSelector, useDispatch } from "react-redux";
 import { removeUser } from "../../store/modules/user";
 import { NavLink, useNavigate } from "react-router-dom";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
+
 
 
 interface IUserState {
@@ -31,7 +34,7 @@ export function Header() {
     };
    
     const handleOrdersClick = () => {
-        if (isLogged) {
+        if (isSignedIn) {
             navigate('/user');
         } else {
             confirmAlert({
@@ -53,7 +56,7 @@ export function Header() {
 
     const handleConfirmOrdersClick = (confirmed: boolean) => {
         if (confirmed) {
-            navigate('/login');
+            navigate('/sign-in');
         } else {
             // do nothing
         }
@@ -78,6 +81,10 @@ export function Header() {
         });
     }
 
+    const { isSignedIn, user, isLoaded } = useUser();
+
+   
+
     return (
         <HeaderBox>
             <img src={logo} alt="" />
@@ -98,9 +105,15 @@ export function Header() {
                         <li onClick={confirmLogout}>Logout <SignOut size={25} color="#15ad43" /></li>
                     </>
                 ) : (
-                    <NavLink to="/login">
-                        <li>Login <Keyhole size={25} color="#15ad43" /></li>
-                    </NavLink>
+                    <header>
+                    <SignedOut>
+                      <SignInButton />
+                    </SignedOut>
+                    <SignedIn>
+                      <UserButton><Keyhole size={25} color="#15ad43" /></UserButton> 
+                    </SignedIn>
+                  </header>
+                   
                 )}
             </ul>
         </HeaderBox>

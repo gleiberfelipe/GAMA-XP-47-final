@@ -12,7 +12,7 @@ import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useUser } from "@clerk/clerk-react";
 
 
 
@@ -32,8 +32,8 @@ interface UserData {
 }
 
 const ProfilePage = () => {
-  const [user, setUser] = useState<UserData>();
-  const isLogged = useSelector((state: any) => state.user.isLogged);
+  const [userClerk, setUserClerk] = useState<UserData>();
+  /*   const isLogged = useSelector((state: any) => state.user.isLogged); */
   const userId = useSelector((state: any) => state.user.id || '');
   const token = useSelector((state: any) => state.user.token || '');
   const [fetchedUserData, setFetchedUserData] = useState<UserData>();
@@ -50,34 +50,45 @@ const ProfilePage = () => {
 
 
 
+  const { isLoaded, user, isSignedIn } = useUser();
+  console.log(user)
 
   //get user by id data
-  const fetchUser = async () => {
-    try {
-      const response = await api.get(`http://localhost:3000/usuarios/?id=${userId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }
-      })
-      const userData = response.data.find((user: IUser) => user.id === userId);
-      setFetchedUserData(userData);
-      setUser(userData);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  /*  const fetchUser = async () => {
+     try {
+       const response = await api.get(`http://localhost:8080/api/customers/${user?.id}`, {
+    
+       });
+   
+       // Verifique se a resposta foi bem-sucedida
+       if (response.status === 200) {
+         // Extraia os dados do usuário da resposta
+         const userData = response.data;
+         setFetchedUserData(userData);
+         setUserClerk(userData);
+       } else {
+         // Trate qualquer erro na resposta da API
+         console.error("Erro ao buscar usuário:", response.statusText);
+       }
+     } catch (error) {
+       // Capture e registre qualquer erro de solicitação
+       console.error("Erro ao fazer solicitação:", error);
+     }
+   };
+    */
 
   useEffect(() => {
-    if (!isLogged) {
+    if (!isSignedIn) {
       // Redirect to login page if user is not logged in
-      navigate('/login');
+      navigate('/sign-in');
     } else {
-      // Fetch user information by ID from endpoint
-      fetchUser();
-      return
+      fetchOrders()
+      setShowUpdateForm(false)
+      fetchOrders()
+      setShowTable(showTable)
+      setShowTable(true)
     }
-  }, [isLogged, userId, shouldReload]);
+  }, [isSignedIn, userId, shouldReload]);
 
 
   const updateUser = (id: number, nome: string, email: string): AnyAction => {
@@ -132,20 +143,21 @@ const ProfilePage = () => {
 
 
   const fetchOrders = () => {
-    fetch(`http://localhost:3000/pedidosusuario/${userId}`, {
+    fetch(`http://localhost:3000/api/orders/customers/${user.id}`, {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       }
     })
       .then((response) => response.json())
       .then((data) => {
-        setOrders(data);
-        setShowTable((showTable) => !showTable); // toggle the value of showTable
+        const reversedData = data.reverse(); // Inverte a ordem dos dados
+        setOrders(reversedData); // Atualiza o estado com os dados invertidos
+        console.log(reversedData); // Mostra os dados invertidos no console
+        setShowTable((showTable) => !showTable); // Alterna o valor de showTable
       })
       .catch((error) => console.log(error));
   };
-
 
 
   // delete user
@@ -181,11 +193,11 @@ const ProfilePage = () => {
               .then(response => {
                 if (response.status = 204) {
                   toast.success("User profile deleted successfully");
-                  
+
                   setTimeout(() => {
                     handleLogout();
                     navigate('/login');
-                  }, 3000); 
+                  }, 3000);
                 } else {
                   // Handle error response
                   console.error('Error deleting user profile');
@@ -211,20 +223,24 @@ const ProfilePage = () => {
       <UserDivMaster>
         {user ? (
           <div>
-            <h1>Nome: {fetchedUserData?.nome}</h1>
-            <p>Email: {fetchedUserData?.email}</p>
-            <button onClick={() => {
+            <div className='userInfo'>
+              <h1>Nome: {user?.firstName}</h1>
+              <p>Email: {user?.emailAddresses[0].emailAddress}</p>
+              <img className="imgUser" src={user?.imageUrl} alt="" />
+            </div>
+
+           {/*  <button onClick={() => {
               setShowUpdateForm(!showUpdateForm);
               setShowTable(false);
-            }}>Atualizar meu perfil</button>
-            <button onClick={() => {
-              fetchOrders();
-              setShowUpdateForm(false);
-            }}>Minhas Compras</button>
+            }}>Atualizar meu perfil</button> */}
+            {/* <button onClick={() => {
+              fetchOrders()
+              setShowUpdateForm(false)
+            }}>Minhas Compras</button> */}
 
-            <button ref={deleteProfileButton} id="delete-profile-button" onClick={handleDeleteProfile}>
+            {/* <button ref={deleteProfileButton} id="delete-profile-button" onClick={handleDeleteProfile}>
               Delete Profile
-            </button>
+            </button> */}
             {showUpdateForm && (
               <form onSubmit={handleSubmit}>
                 <label htmlFor="name">Nome:</label>
@@ -258,33 +274,39 @@ const ProfilePage = () => {
                   <tbody>
                     {orders.map((order) => (
                       <tr key={order.id}>
-                        <td>{order.id}</td>
-                        <td>{order.usuario_id}</td>
-                        <td>{order.valor}</td>
+                        <td>{order._id}</td>
+                        <td>{order.customerClerkId}</td>
+                        <td>{order.totalAmount}</td>
                         <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                         <td>
                           <table>
                             <thead>
                               <tr>
                                 <th>Nome Produto</th>
+                                <th>Variação</th>
                                 <th>Quantidade</th>
+
                                 <th>foto</th>
                                 <th>Preço unitário</th>
                                 <th>Preço parcial</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {order.Produtos.map((produto) => (
-                                <tr key={produto.id}>
-                                  <td>{produto.nome}</td>
-                                  <td>{produto.DetalhesPedido.quantidade}</td>
-                                  <td>
-                                    <img src={`http://localhost:3000/imagens/${produto.foto}`} alt={produto.nome} />
-                                  </td>
-                                  <td>{produto.preco}</td>
-                                  <td>{produto.preco * produto.DetalhesPedido.quantidade}</td>
-                                </tr>
+                              {order?.products?.map((produto) => (
+                                  <tr key={produto?.product?._id}>
+                                    <td>{produto?.product?.title}</td>
+                                    <td>{produto?.color}</td>
+                                    <td>{produto?.quantity}</td>
+                                    <td>
+                                      <img src={produto?.product?.media[0]} alt={produto?.product?.title} />
+                                    </td>
+                                    <td>{produto?.product?.price}</td>     
+                                    <td>{produto?.product?.price * produto?.quantity}</td>
+                                  </tr>
+                                
                               ))}
+
+
                             </tbody>
                           </table>
                         </td>
