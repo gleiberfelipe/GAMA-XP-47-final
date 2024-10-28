@@ -18,6 +18,7 @@ import AdminPedidosUpdate from "./pages/admin/orders/AdminOdersUpdate";
 import AdminPedidosCreate from "./pages/admin/orders/adminOrderCreate";
 import SignInPage from "./pages/login";
 import StoreReturns from "./pages/storeReturns";
+import Feedback from "./pages/feedback"
 
 
 
@@ -40,6 +41,7 @@ export default function Router({ onLogin }: RouterProps) {
             <Route path="/signup" element={< SignUp />} />
             <Route path="/checkout/:orderId" element={<CheckOut/>} />
             <Route path="/orderreturn/" element={<StoreReturns/>} />
+            <Route path="/feedback/" element={<Feedback/>} />
             <Route path="/admin" element={< Admin/>} />
             <Route path="/admin/user/:id" element={< AdminUserUpdate/>}/>
             <Route path="/admin/user" element={<AdminNewUser/>} />
